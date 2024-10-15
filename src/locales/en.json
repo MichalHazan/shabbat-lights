@@ -1,0 +1,12 @@
+{
+    "menu": {
+      "addAlert": "Add Alert",
+      "language": "Language",
+      "hebrew": "Hebrew",
+      "english": "English"
+    },
+    "candlesTimes": {
+      "title": "Candle Lighting Times"
+    }
+  }
+  

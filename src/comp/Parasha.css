@@ -1,0 +1,42 @@
+/* General styling for the parasha component */
+.parasha {
+  padding: 20px;
+  max-width: 400px; /* Limits the width of the component */
+  margin: 20px auto; /* Centers the component */
+  font-family: "Roboto", sans-serif;
+}
+
+/* Styling for the title */
+.title {
+  font-size: 1.4rem; /* Larger font size for the title */
+  color: #0b1725; /* A calm blue color for the title */
+  text-align: center; /* Center align the title */
+  margin-bottom: 15px; /* Space below the title */
+  border-bottom: 2px solid #e0e0e0; /* Underline for title emphasis */
+  padding-bottom: 10px; /* Padding for spacing */
+  font-weight: 700;
+}
+
+/* Styling for the parasha text */
+.parasha-text {
+  font-size: 1.3rem; /* Font size for parasha text */
+  color: #333333; /* Dark color for readability */
+  line-height: 1.6; /* Increased line height for better readability */
+  text-align: center; /* Align text to the right for RTL */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 480px) {
+  .parasha {
+    padding: 15px; /* Less padding on small screens */
+    max-width: 90%; /* Allow more width for smaller devices */
+  }
+
+  .title {
+    font-size: 1.5rem; /* Smaller font size for title */
+  }
+
+  .parasha-text {
+    font-size: 1.2rem; /* Smaller font size for parasha text */
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "menu": {
+    "addAlert": "הוסף התראה",
+    "language": "שפה",
+    "hebrew": "עברית",
+    "english": "אנגלית"
+  },
+  "candlesTimes": {
+    "title": "זמני הדלקת נרות"
+  },
+  "imageComp": {
+    "title": "לעילוי נשמת"
+  }
+}
