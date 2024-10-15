@@ -1,43 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Grid, IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useTranslation } from "react-i18next";
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import ImageComp from "./ImageComp";
 import CandelsTimes from "./CandelsTimes";
 import Parasha from './Parasha';
+import AlertComp from './AlertComp';
 
 export default function Feed() {
   const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-  const [showImageComp, setShowImageComp] = useState(true); // State to toggle components
-
-  const toggleComponent = () => {
-    setShowImageComp((prev) => !prev); // Toggle the component
-  };
-
-  const { t, i18n } = useTranslation();
+  const openMenu = Boolean(anchorEl);
+  const [alertOpen, setAlertOpen] = useState(false); // State for alert dialog
+  const [showImageComp, setShowImageComp] = useState(true);
+  const [alertSettings, setAlertSettings] = useState({ time: null, sound: null }); // State to hold alert settings
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleCloseMenu = () => {
     setAnchorEl(null);
   };
 
   const handleAddAlert = () => {
-    console.log("Add Alert clicked");
+    setAlertOpen(true); // Open the alert dialog
     setAnchorEl(null);
   };
-{/*
-  const handleLanguageChange = (lang) => {
-    i18n.changeLanguage(lang); // Switch the language
-    setAnchorEl(null);
-  };
- */}
 
- 
+  const handleCloseAlert = () => {
+    setAlertOpen(false); // Close the alert dialog
+  };
+
+  const toggleComponent = () => {
+    setShowImageComp((prev) => !prev);
+  };
+
+  const handleSave = (selectedTime, selectedSound) => {
+    setAlertSettings({ time: selectedTime, sound: selectedSound }); // Save alert settings
+    setAlertOpen(false); // Close the AlertComp dialog after saving
+  };
+
+  // Effect to handle alert logic
+  useEffect(() => {
+    if (alertSettings.time !== null && alertSettings.sound) {
+      // Get the current candle lighting time from local storage
+      const shabbatTimes = JSON.parse(localStorage.getItem('shabbatTimes'));
+      const candleLightingTime = new Date(shabbatTimes.candleLightingDate); // Time for candle lighting
+      const alertTime = new Date(candleLightingTime.getTime() - alertSettings.time * 60000); // Time for the alert
+
+      const timeUntilAlert = alertTime.getTime() - new Date().getTime();
+
+      if (timeUntilAlert > 0) {
+        const alertTimeout = setTimeout(() => {
+          const soundToPlay = new Audio(`/sounds/${alertSettings.sound}`);
+          soundToPlay.play();
+          alert('Shabbat is starting soon!');
+        }, timeUntilAlert);
+
+        // Cleanup function to clear the timeout if the component unmounts or settings change
+        return () => clearTimeout(alertTimeout);
+      }
+    }
+  }, [alertSettings]); // Dependency array to rerun effect when alertSettings change
+
   return (
     <Box
       sx={{
@@ -47,68 +72,52 @@ export default function Feed() {
         justifyContent: "center",
         alignItems: "center",
         padding: 2,
-        position: "relative", // Make the Feed container relative
+        position: "relative",
       }}
     >
-      {/* IconButton for menu pinned to top-right of the entire Feed component */}
       <IconButton
         aria-label="more"
-        aria-controls={open ? "menu" : undefined}
+        aria-controls={openMenu ? "menu" : undefined}
         aria-haspopup="true"
         onClick={handleClick}
         sx={{
-          position: "absolute", // Absolute positioning within the Feed
-          top: 2, // Adjust the top distance
-          right: 1, // Adjust the right distance
+          position: "absolute",
+          top: 2,
+          right: 1,
         }}
       >
         <MoreVertIcon />
       </IconButton>
 
-      {/* Menu component */}
-      <Menu id="menu" anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={handleAddAlert}>{t("menu.addAlert")}</MenuItem>
-        {/*
-        <MenuItem onClick={() => handleLanguageChange("he")}>
-          {t("menu.hebrew")}
-        </MenuItem>
-        <MenuItem onClick={() => handleLanguageChange("en")}>
-          {t("menu.english")}
-        </MenuItem>
-        */}
+      <Menu id="menu" anchorEl={anchorEl} open={openMenu} onClose={handleCloseMenu}>
+        <MenuItem onClick={handleAddAlert}>הוסף התראה</MenuItem>
       </Menu>
 
-     {/* Grid for ImageComp and CandelsTimes */}
-     <Grid
-        container
-        spacing={2}
-        sx={{
-          marginLeft: 0, // Remove the negative margin
-          marginRight: 0, // Ensure right margin is also adjusted
-        }}
-      >
-          <Grid item xs={5}>
-          {showImageComp ? <ImageComp /> : <Parasha />} {/* Toggle component */}
+      {/* Render the AlertComp dialog */}
+      <AlertComp open={alertOpen} onClose={handleCloseAlert} handleSave={handleSave} />
+
+      <Grid container spacing={2}>
+        <Grid item xs={5}>
+          {showImageComp ? <ImageComp /> : <Parasha />}
         </Grid>
         <Grid item xs={7}>
           <CandelsTimes />
         </Grid>
       </Grid>
 
-      {/* Arrow button to switch components */}
       <IconButton
         onClick={toggleComponent}
         sx={{
           position: 'absolute',
           bottom: 16,
           left: 16,
-          backgroundColor: '#fff', // Optional: background color for visibility
+          backgroundColor: '#fff',
           '&:hover': {
-            backgroundColor: '#f0f0f0', // Change color on hover
+            backgroundColor: '#f0f0f0',
           },
         }}
       >
-        <CompareArrowsIcon fontSize="small"/>
+        <CompareArrowsIcon fontSize="small" />
       </IconButton>
     </Box>
   );
