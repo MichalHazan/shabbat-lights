@@ -5,7 +5,7 @@ export default function CandelsTimes() {
     candleLighting: "",
     havdalah: "",
     parasha: "",
-    candleLightingTime : null
+    candleLightingTime: null,
   });
   const [error, setError] = useState(null);
 
@@ -81,7 +81,7 @@ export default function CandelsTimes() {
           candleLighting: formattedCandleLighting,
           havdalah: formattedHavdalah,
           parasha: parasha || "לא זמין", // Set parasha name or fallback
-          candleLightingDate: "2024-10-15T15:59:00"
+          candleLightingDate: candleLightingTime,
         });
 
         // Store in local storage
@@ -91,7 +91,7 @@ export default function CandelsTimes() {
             candleLighting: formattedCandleLighting,
             havdalah: formattedHavdalah,
             parasha: parasha || "לא זמין",
-            candleLightingDate: "2024-10-15T15:59:00"
+            candleLightingDate: candleLightingTime,
           })
         );
         localStorage.setItem("shabbatTimesTime", currentTime.toString());

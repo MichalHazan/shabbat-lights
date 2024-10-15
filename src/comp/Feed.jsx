@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Box, Grid, IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
@@ -13,6 +13,9 @@ export default function Feed() {
   const [alertOpen, setAlertOpen] = useState(false); // State for alert dialog
   const [showImageComp, setShowImageComp] = useState(true);
   const [alertSettings, setAlertSettings] = useState({ time: null, sound: null }); // State to hold alert settings
+  const [alertTriggered, setAlertTriggered] = useState(false);
+  const soundRef = useRef(null); // Reference to hold the audio object
+
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -51,17 +54,42 @@ export default function Feed() {
       const timeUntilAlert = alertTime.getTime() - new Date().getTime();
 
       if (timeUntilAlert > 0) {
+        // Schedule the sound to play 30 seconds before the alert
+        const soundTimeout = setTimeout(() => {
+          soundRef.current = new Audio(`/sounds/${alertSettings.sound}`);
+          soundRef.current.play().catch((error) => console.error('Error playing sound:', error));
+        }, timeUntilAlert - 10000); // 30 seconds before alert
+
+        // Schedule the alert dialog to appear at the exact time
         const alertTimeout = setTimeout(() => {
-          const soundToPlay = new Audio(`/sounds/${alertSettings.sound}`);
-          soundToPlay.play();
-          alert('Shabbat is starting soon!');
+          setAlertTriggered(true);
         }, timeUntilAlert);
 
-        // Cleanup function to clear the timeout if the component unmounts or settings change
-        return () => clearTimeout(alertTimeout);
+        return () => {
+          clearTimeout(soundTimeout);
+          clearTimeout(alertTimeout);
+        };
       }
     }
   }, [alertSettings]); // Dependency array to rerun effect when alertSettings change
+
+   // Effect to stop sound after clicking "OK"
+   useEffect(() => {
+    if (!alertTriggered) return; // Only trigger if the alert was shown
+
+    const handleStopSound = () => {
+      if (soundRef.current) {
+        soundRef.current.pause();
+        soundRef.current = null; // Reset the audio ref
+      }
+      setAlertTriggered(false); // Reset the alert state
+    };
+
+    // Show the alert to the user
+    alert('תכף הזמן להדליק נרות שבת'); // This will wait until the user clicks "OK"
+    handleStopSound(); // Stop the sound after the alert is dismissed
+
+  }, [alertTriggered]);
 
   return (
     <Box
