@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./CandelsTimes.css";
+import { calculateShabbatTimes, getCityName } from "../utils/shabbatUtils";
+
 export default function CandelsTimes() {
   const [shabbatTimes, setShabbatTimes] = useState({
     candleLighting: "",
@@ -8,99 +10,119 @@ export default function CandelsTimes() {
     candleLightingTime: null,
   });
   const [error, setError] = useState(null);
+  const [shabbatInfo, setShabbatInfo] = useState(null);
+  const [city, setCity] = useState("");
 
   useEffect(() => {
     // Get user's current location
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-
-        // Get timezone from the user's current location
-        const tzid = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-        // Fetch Shabbat times with the user's coordinates and timezone
-        fetchShabbatTimes(latitude, longitude, tzid);
+        // Fetch Shabbat times
+        fetchShabbatTimes(latitude, longitude);
       },
       (error) => {
-        setError("Unable to retrieve your location.");
+        setError(
+          "Unable to retrieve your location. Using default location Jerusalem"
+        );
         console.error(error);
+        fetchShabbatTimesForDefaultLocation();
       }
     );
-    const fetchShabbatTimes = async (latitude, longitude, tzid) => {
-      const apiUrl = `https://www.hebcal.com/shabbat?cfg=json&geo=pos&latitude=${latitude}&longitude=${longitude}&tzid=${tzid}&M=on&b=20`;
-      console.log(apiUrl);
-
-      // Check local storage
-      const storedData = localStorage.getItem("shabbatTimes");
-      const storedTime = localStorage.getItem("shabbatTimesTime");
-      const currentTime = new Date().getTime();
-
-      // If data exists and is less than 2 days old, use it
-      if (
-        storedData &&
-        storedTime &&
-        currentTime - storedTime < 2 * 24 * 60 * 60 * 1000
-      ) {
-        setShabbatTimes(JSON.parse(storedData));
-        return;
-      }
-
-      try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-
-        // Find candle lighting, havdalah, and parasha times based on categories
-        const candleLightingTime = data.items.find(
-          (item) => item.category === "candles"
-        )?.date;
-        const havdalahTime = data.items.find(
-          (item) => item.category === "havdalah"
-        )?.date;
-        // Attempt to find parashat; if not found, use item[2].hebrew
-        const parasha =
-          data.items.find((item) => item.category === "parashat")?.hebrew ||
-          data.items[2]?.hebrew ||
-          "לא זמין";
-
-        // Format times
-        const formattedCandleLighting = candleLightingTime
-          ? new Date(candleLightingTime).toLocaleTimeString("he-IL", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "לא זמין";
-        const formattedHavdalah = havdalahTime
-          ? new Date(havdalahTime).toLocaleTimeString("he-IL", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "לא זמין";
-
-        // Set the fetched times
-        setShabbatTimes({
-          candleLighting: formattedCandleLighting,
-          havdalah: formattedHavdalah,
-          parasha: parasha || "לא זמין", // Set parasha name or fallback
-          candleLightingDate: candleLightingTime,
-        });
-
-        // Store in local storage
-        localStorage.setItem(
-          "shabbatTimes",
-          JSON.stringify({
-            candleLighting: formattedCandleLighting,
-            havdalah: formattedHavdalah,
-            parasha: parasha || "לא זמין",
-            candleLightingDate: candleLightingTime,
-          })
-        );
-        localStorage.setItem("shabbatTimesTime", currentTime.toString());
-      } catch (err) {
-        setError("Failed to fetch Shabbat times.");
-        console.error(err);
-      }
-    };
   }, []);
+
+  const fetchShabbatTimesForDefaultLocation = async () => {
+    // Use a default location if geolocation fails
+    const defaultCity = "Jerusalem";
+    const latitude = 31.7683; // Latitude for Jerusalem
+    const longitude = 35.2137; // Longitude for Jerusalem
+    await fetchShabbatTimes(latitude, longitude);
+  };
+
+  const fetchShabbatTimes = async (latitude, longitude) => {
+    // Check local storage
+    const storedData = localStorage.getItem("shabbatTimes");
+    const storedTime = localStorage.getItem("shabbatTimesTime");
+    const currentTime = new Date().getTime();
+
+    // If data exists and is less than 2 days old, use it
+    if (
+      storedData &&
+      storedTime &&
+      currentTime - storedTime < 2 * 24 * 60 * 60 * 1000
+    ) {
+      setShabbatTimes(JSON.parse(storedData));
+      return;
+    }
+
+    try {
+      const cityName = await getCityName(latitude, longitude);
+      const shabbatData = await calculateShabbatTimes(
+        latitude,
+        longitude,
+        cityName
+      );
+      const closestShabbat = findClosestShabbat(shabbatData[cityName]);
+      console.log(shabbatData[cityName]);
+      console.log(closestShabbat);
+      setShabbatInfo(closestShabbat); // Set the shabbatInfo here
+    } catch (err) {
+      setError("Failed to fetch Shabbat times.");
+      console.error(err);
+    }
+  };
+
+  // UseEffect to update shabbatTimes after shabbatInfo has been set
+  useEffect(() => {
+    if (shabbatInfo) {
+      // Set the fetched times after shabbatInfo is updated
+      setShabbatTimes({
+        candleLighting: shabbatInfo.candle_lighting,
+        havdalah: shabbatInfo.havdalah,
+        parasha: shabbatInfo.torah_hw || "לא זמין",
+        candleLightingDate: shabbatInfo.date,
+      });
+
+      // Store in local storage
+      const currentTime = new Date().getTime();
+      localStorage.setItem(
+        "shabbatTimes",
+        JSON.stringify({
+          candleLighting: shabbatInfo.candle_lighting,
+          havdalah: shabbatInfo.havdalah,
+          parasha: shabbatInfo.torah_hw || "לא זמין",
+          candleLightingDate: shabbatInfo.date,
+        })
+      );
+      localStorage.setItem("shabbatTimesTime", currentTime.toString());
+    }
+  }, [shabbatInfo]); // Trigger this effect when shabbatInfo changes
+
+  // Function to parse 'dd/mm/yy' string into Date object
+  const parseDate = (dateStr) => {
+    const [day, month, year] = dateStr.split("/").map(Number);
+    return new Date(`20${year}`, month - 1, day); // Adjust year and month
+  };
+
+  // Function to find the closest Shabbat from the shabbatData array
+  const findClosestShabbat = (shabbatData) => {
+    const today = new Date();
+
+    // Filter the data for dates that are >= today
+    const upcomingShabbats = shabbatData.filter((item) => {
+      const itemDate = parseDate(item.date);
+      return itemDate >= today;
+    });
+
+    if (upcomingShabbats.length === 0) return null; // No upcoming Shabbat found
+
+    // Find the Shabbat with the closest date to today
+    return upcomingShabbats.reduce((prev, curr) => {
+      const prevDate = parseDate(prev.date);
+      const currDate = parseDate(curr.date);
+      return currDate < prevDate ? curr : prev;
+    });
+  };
 
   return (
     <div className="shabbat-container">
