@@ -20,7 +20,7 @@ const readTorahPortionsCSV = async () => {
   const response = await fetch(csvFilePath);
   const csvText = await response.text();
   const rows = csvText.split("\n");
-  const results = rows.slice(1).map(row => {
+  const results = rows.slice(1).map((row) => {
     const [date, torah_hw, torah_en] = row.split(",");
     return { date, torah_hw, torah_en };
   });
@@ -49,9 +49,15 @@ const getNextYearFridaysAndSaturdays = () => {
 };
 
 // Function to calculate Shabbat times and Torah portions based on location
-export const calculateShabbatTimes = async (latitude, longitude, locationName) => {
+export const calculateShabbatTimes = async (
+  latitude,
+  longitude,
+  locationName
+) => {
   const { fridays, saturdays, currentYear } = getNextYearFridaysAndSaturdays();
-  const fileName = `${locationName.replace(/\s/g, "").toLowerCase()}${currentYear}.json`;
+  const fileName = `${locationName
+    .replace(/\s/g, "")
+    .toLowerCase()}${currentYear}.json`;
 
   // Check if the JSON file already exists in local storage
   if (localStorage.getItem(fileName)) {
@@ -77,7 +83,7 @@ export const calculateShabbatTimes = async (latitude, longitude, locationName) =
 
       // Find matching Torah portion from CSV by date
       const torahPortion = torahPortions.find((portion) => {
-        const [day, month, year] = portion.date.split('/');
+        const [day, month, year] = portion.date.split("/");
         const portionDate = new Date(`${year}-${month}-${day}`);
         return portionDate.toDateString() === saturday.toDateString();
       });
@@ -98,7 +104,10 @@ export const calculateShabbatTimes = async (latitude, longitude, locationName) =
     }
 
     // Save results to local storage
-    localStorage.setItem(fileName, JSON.stringify({ [locationName]: shabbatTimes }));
+    localStorage.setItem(
+      fileName,
+      JSON.stringify({ [locationName]: shabbatTimes })
+    );
     console.log(`Shabbat times saved to ${fileName}`);
 
     return { [locationName]: shabbatTimes };
@@ -126,33 +135,35 @@ export const fetchUserLocation = async () => {
     return {
       latitude: 31.7683,
       longitude: 35.2137,
-      city: "Jerusalem"
+      city: "Jerusalem",
     };
   }
 };
 
 export const getCityName = async (latitude, longitude) => {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
-  
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-  
-      if (data.address) {
-        // Extract city, town, or village from the response
-        const locationName = data.address.city || data.address.town || data.address.village;
-  
-        if (locationName) {
-          return locationName;
-        } else {
-          throw new Error("City not found in the provided coordinates.");
-        }
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.address) {
+      // Extract city, town, or village from the response
+      const locationName =
+        data.address.city || data.address.town || data.address.village;
+
+      if (locationName) {
+        localStorage.setItem("cityName", locationName);
+        return locationName;
       } else {
-        throw new Error("No results found for the provided coordinates.");
+        return `${latitude}lalo${longitude}`;
       }
-    } catch (error) {
-      console.error('Error fetching location data:', error);
-      // If error occurs, set locationName to "byll"
-      return "byll";
+    } else {
+      return `${latitude}lalo${longitude}`;
     }
-  };
+  } catch (error) {
+    console.error("Error fetching location data:", error);
+    // If error occurs, set locationName to "byll"
+    return `${latitude}lalo${longitude}`;
+  }
+};

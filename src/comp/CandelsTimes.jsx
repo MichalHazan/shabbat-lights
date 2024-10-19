@@ -11,31 +11,43 @@ export default function CandelsTimes() {
   });
   const [error, setError] = useState(null);
   const [shabbatInfo, setShabbatInfo] = useState(null);
-  const [city, setCity] = useState("");
 
   useEffect(() => {
     // Get user's current location
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        // Fetch Shabbat times
-        fetchShabbatTimes(latitude, longitude);
-      },
-      (error) => {
-        setError(
-          "Unable to retrieve your location. Using default location Jerusalem"
-        );
-        console.error(error);
-        fetchShabbatTimesForDefaultLocation();
-      }
-    );
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // Save the location for offline use
+          localStorage.setItem(
+            "userLocation",
+            JSON.stringify({ latitude, longitude })
+          );
+
+          // Fetch Shabbat times
+          fetchShabbatTimes(latitude, longitude);
+        },
+        (error) => {
+          setError(
+            "Unable to retrieve your location. Using default location Jerusalem"
+          );
+          console.error(error);
+          fetchShabbatTimesForDefaultLocation();
+        }
+      );
+    } else {
+      console.log("Geolocation is not supported by this browser.");
+      fetchShabbatTimesForDefaultLocation();
+    }
   }, []);
 
   const fetchShabbatTimesForDefaultLocation = async () => {
-    // Use a default location if geolocation fails
-    const defaultCity = "Jerusalem";
-    const latitude = 31.7683; // Latitude for Jerusalem
-    const longitude = 35.2137; // Longitude for Jerusalem
+    // Check if there's a location saved in localStorage
+    const savedLocation = JSON.parse(localStorage.getItem("userLocation"));
+
+    // Use a default location if geolocation fails Jerusalem
+    const latitude = savedLocation ? savedLocation.latitude : 31.7683;
+    const longitude = savedLocation ? savedLocation.longitude : 35.2137;
     await fetchShabbatTimes(latitude, longitude);
   };
 
@@ -56,7 +68,8 @@ export default function CandelsTimes() {
     }
 
     try {
-      const cityName = await getCityName(latitude, longitude);
+      const cityName = localStorage.getItem("cityName")? localStorage.getItem("cityName") : await getCityName(latitude, longitude);
+      localStorage.setItem("cityName", cityName)
       const shabbatData = await calculateShabbatTimes(
         latitude,
         longitude,
