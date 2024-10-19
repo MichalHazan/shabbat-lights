@@ -6,19 +6,20 @@ this.addEventListener("install", (event) => {
         "/static/js/main.chunk.js",
         "/static/js/0.chunk.js",
         "/static/js/bundle.js",
-        '/index.js',
-        '/'
+        "/index.js",
+        "/",
+        "/users",
       ]);
     })
   );
 });
 
-this.addEventListener("fetch",(event)=>{
-    event.respondWith(
-        caches.match(event.request).then((resp)=>{
-            if (resp) {
-                return resp
-            }
-        })
-    )
-})
+this.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((resp) => {
+      if (resp) {
+        return resp;
+      }
+    })
+  );
+});
