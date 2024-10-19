@@ -12,6 +12,8 @@ this.addEventListener("install", (event) => {
         "/static/css/main.6a39032e.css",
         "/static/media/candle.5740c5b52047ffcc8060.png",
         "/data/torahportions.csv",
+        "/static/css/main.chunk.css", 
+        "/static/media/material-icons.woff2", 
         "/",
       ]);
     })
