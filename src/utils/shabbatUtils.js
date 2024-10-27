@@ -78,7 +78,7 @@ export const calculateShabbatTimes = async (
       const saturdaySunTimes = SunCalc.getTimes(saturday, latitude, longitude);
 
       // Calculate candle lighting time and Havdalah time
-      const candleLightingTime = adjustMinutes(fridaySunTimes.sunset, -34);
+      const candleLightingTime = adjustMinutes(fridaySunTimes.sunset, -24);
       const havdalahTime = adjustMinutes(saturdaySunTimes.sunset, 37);
 
       // Find matching Torah portion from CSV by date
