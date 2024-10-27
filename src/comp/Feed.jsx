@@ -137,7 +137,7 @@ export default function Feed() {
         onClick={toggleComponent}
         sx={{
           position: 'absolute',
-          bottom: 16,
+          bottom: 55,
           left: 16,
           backgroundColor: '#fff',
           '&:hover': {
