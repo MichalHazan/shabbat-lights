@@ -22,7 +22,7 @@ const sounds = [
   { name: "שלום עליכם", value: "shalomAleichem.mp3" },
 ];
 
-export default function AlertComp({ open, onClose, handleSave }) {
+export default function AlertComp({ open, onClose, handleSaveAlert }) {
   const [selectedTime, setSelectedTime] = useState(5);
   const [selectedSound, setSelectedSound] = useState(sounds[4].value);
   const audioRef = useRef(null);
@@ -46,7 +46,7 @@ export default function AlertComp({ open, onClose, handleSave }) {
   };
 
   // Handle save button
-  const handleSaveClick = () => {
+  const handleSaveAlertClick = () => {
     if (audioRef.current) {
       audioRef.current.pause(); // Stop audio when saving
     }
@@ -55,8 +55,8 @@ export default function AlertComp({ open, onClose, handleSave }) {
     localStorage.setItem("alertTime", selectedTime);
     localStorage.setItem("alertSound", selectedSound);
 
-    // Close the dialog and invoke handleSave to pass the values back
-    handleSave(selectedTime, selectedSound);
+    // Close the dialog and invoke handleSaveAlert to pass the values back
+    handleSaveAlert(selectedTime, selectedSound);
   };
 
   return (
@@ -95,7 +95,7 @@ export default function AlertComp({ open, onClose, handleSave }) {
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseClick}>Cancel</Button>
-        <Button onClick={handleSaveClick}>Save</Button>
+        <Button onClick={handleSaveAlertClick}>Save</Button>
       </DialogActions>
     </Dialog>
   );
