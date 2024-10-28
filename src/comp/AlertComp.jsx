@@ -94,8 +94,8 @@ export default function AlertComp({ open, onClose, handleSaveAlert }) {
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseClick}>Cancel</Button>
-        <Button onClick={handleSaveAlertClick}>Save</Button>
+        <Button onClick={handleCloseClick}>בטל</Button>
+        <Button onClick={handleSaveAlertClick}>שמור</Button>
       </DialogActions>
     </Dialog>
   );
