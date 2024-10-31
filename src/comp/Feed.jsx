@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, Grid, IconButton, Menu, MenuItem, Typography } from "@mui/material";
+import {
+  Box,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import ImageComp from "./ImageComp";
@@ -7,6 +14,7 @@ import CandelsTimes from "./CandelsTimes";
 import Parasha from "./Parasha";
 import AlertComp from "./AlertComp";
 import SpecialEvents from "./SpecialEvents";
+import UserEventsComponent from "./UserEventsComponent";
 
 export default function Feed() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -23,6 +31,9 @@ export default function Feed() {
   const [specialEventsSettings, setSpecialEventsSettings] = useState([]); // State to hold SpecialEvents settings
   const [specialEventsTriggered, setSpecialEventsTriggered] = useState(false);
 
+  const [userEventsOpen, setUserEventsOpen] = useState(false); // State for UserEvents dialog
+  const [userEventsSettings, setUserEventsSettings] = useState([]); // State to hold UserEvents settings
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -31,7 +42,22 @@ export default function Feed() {
     setAnchorEl(null);
   };
 
-  //Alert
+  // User Events
+  const handleAddUserEvents = () => {
+    setUserEventsOpen(true); // Open the UserEvents dialog
+    setAnchorEl(null);
+  };
+
+  const handleCloseUserEvents = () => {
+    setUserEventsOpen(false); // Close the UserEvents dialog
+  };
+
+  const handleSaveUserEvents = (updatedEvents) => {
+    setUserEventsSettings(updatedEvents); // Update the userEventsSettings with the new events
+    setUserEventsOpen(false); // Close the UserEvents dialog after saving
+  };
+
+  // Alert
   const handleAddAlert = () => {
     setAlertOpen(true); // Open the alert dialog
     setAnchorEl(null);
@@ -45,8 +71,9 @@ export default function Feed() {
     setAlertSettings({ time: selectedTime, sound: selectedSound }); // Save alert settings
     setAlertOpen(false); // Close the AlertComp dialog after saving
   };
-  //Special Events
-  const handleAddSpecialEvents = (updatedEvents) => {
+
+  // Special Events
+  const handleAddSpecialEvents = () => {
     setSpecialEventsOpen(true); // Open the SpecialEvents dialog
     setAnchorEl(null);
   };
@@ -59,6 +86,7 @@ export default function Feed() {
     setSpecialEventsSettings(updatedEvents); // Update the specialEventsSettings with the new events
     setSpecialEventsOpen(false); // Close the SpecialEvents dialog after saving
   };
+
   // Effect to check if there's an event today
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -66,14 +94,13 @@ export default function Feed() {
       (event) => event.date === today
     );
     if (todayEvent) {
-      // Display today's event title at the top of the page
       setSpecialEventsTriggered(todayEvent.title);
     } else {
       setSpecialEventsTriggered(false); // Clear the title if no event is today
     }
   }, [specialEventsSettings]);
-  
-  //toggle Component
+
+  // Toggle Component
   const toggleComponent = () => {
     setShowImageComp((prev) => !prev);
   };
@@ -81,17 +108,14 @@ export default function Feed() {
   // Effect to handle alert logic
   useEffect(() => {
     if (alertSettings.time !== null && alertSettings.sound) {
-      // Get the current candle lighting time from local storage
       const shabbatTimes = JSON.parse(localStorage.getItem("shabbatTimes"));
-      const candleLightingTime = new Date(shabbatTimes.candleLightingDate); // Time for candle lighting
+      const candleLightingTime = new Date(shabbatTimes.candleLightingDate);
       const alertTime = new Date(
         candleLightingTime.getTime() - alertSettings.time * 60000
-      ); // Time for the alert
-
+      );
       const timeUntilAlert = alertTime.getTime() - new Date().getTime();
 
       if (timeUntilAlert > 0) {
-        // Schedule the sound to play 30 seconds before the alert
         const soundTimeout = setTimeout(() => {
           soundRef.current = new Audio(`/sounds/${alertSettings.sound}`);
           soundRef.current
@@ -99,7 +123,6 @@ export default function Feed() {
             .catch((error) => console.error("Error playing sound:", error));
         }, timeUntilAlert - 10000); // 30 seconds before alert
 
-        // Schedule the alert dialog to appear at the exact time
         const alertTimeout = setTimeout(() => {
           setAlertTriggered(true);
         }, timeUntilAlert);
@@ -110,23 +133,22 @@ export default function Feed() {
         };
       }
     }
-  }, [alertSettings]); // Dependency array to rerun effect when alertSettings change
+  }, [alertSettings]);
 
   // Effect to stop sound after clicking "OK"
   useEffect(() => {
-    if (!alertTriggered) return; // Only trigger if the alert was shown
+    if (!alertTriggered) return;
 
     const handleStopSound = () => {
       if (soundRef.current) {
         soundRef.current.pause();
-        soundRef.current = null; // Reset the audio ref
+        soundRef.current = null;
       }
-      setAlertTriggered(false); // Reset the alert state
+      setAlertTriggered(false);
     };
 
-    // Show the alert to the user
-    alert("תכף הזמן להדליק נרות שבת"); // This will wait until the user clicks "OK"
-    handleStopSound(); // Stop the sound after the alert is dismissed
+    alert("תכף הזמן להדליק נרות שבת");
+    handleStopSound();
   }, [alertTriggered]);
 
   return (
@@ -179,8 +201,9 @@ export default function Feed() {
       >
         <MenuItem onClick={handleAddAlert}>הוסף התראה</MenuItem>
         <MenuItem onClick={handleAddSpecialEvents}>הוסף יום מיוחד</MenuItem>
+        <MenuItem onClick={handleAddUserEvents}>הצגת האירועים</MenuItem>
       </Menu>
-      
+
       {/* Render the AlertComp dialog */}
       <AlertComp
         open={alertOpen}
@@ -192,6 +215,12 @@ export default function Feed() {
         open={specialEventsOpen}
         onClose={handleCloseSpecialEvents}
         handleSaveSpecialEvents={handleSaveSpecialEvents}
+      />
+      {/* Render the UserEvents dialog */}
+      <UserEventsComponent
+        open={userEventsOpen}
+        onClose={handleCloseUserEvents}
+        handleSaveUserEvents={handleSaveUserEvents}
       />
 
       <Grid container spacing={2}>

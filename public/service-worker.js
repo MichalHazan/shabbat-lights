@@ -1,7 +1,7 @@
-let caheData = "appV1";
+let cacheData = "appV1";
 this.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(caheData).then((cache) => {
+    caches.open(cacheData).then((cache) => {
       cache.addAll([
         "/static/js/main.chunk.js",
         "/static/js/0.chunk.js",
@@ -20,6 +20,7 @@ this.addEventListener("install", (event) => {
         "/sounds/cuckoo-9-94258.mp3",
         "/sounds/shalomAleichem.mp3",
         "/sounds/level-complete-mobile-game-app-locran-1-00-06.mp3",
+        "/favicon.ico",
         "/",
       ]);
     })
@@ -28,28 +29,15 @@ this.addEventListener("install", (event) => {
 
 this.addEventListener("fetch", (event) => {
   if (!navigator.onLine) {
-    if (event.request.url === "http://localhost:3000/static/js/main.chunk.js") {
-      this.registration.showNotification("Internet", {
-        body: "Internet not working",
-      });
-    }
     event.respondWith(
       caches.match(event.request).then((response) => {
-        // Return the cached response if found
-        if (response) {
-          return response;
-        }
-        // Attempt to fetch from the network (will fail offline)
-        return fetch(event.request).catch(() => {
-          // Optional: Return a generic fallback if fetch fails
-          return new Response(
-            "You are offline, and the requested resource is not cached.",
-            {
-              status: 503,
-              statusText: "Service Unavailable",
-            }
-          );
-        });
+        return response || new Response(
+          "You are offline, and the requested resource is not cached.",
+          {
+            status: 503,
+            statusText: "Service Unavailable",
+          }
+        );
       })
     );
   }
