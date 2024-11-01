@@ -15,6 +15,7 @@ import Parasha from "./Parasha";
 import AlertComp from "./AlertComp";
 import SpecialEvents from "./SpecialEvents";
 import UserEventsComponent from "./UserEventsComponent";
+import bricks from "../images/bricks.jpeg";
 
 export default function Feed() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -89,10 +90,15 @@ export default function Feed() {
 
   // Effect to check if there's an event today
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const todayEvent = specialEventsSettings.find(
-      (event) => event.date === today
-    );
+    const today = new Date();
+    const todayStart = new Date(today.setHours(0, 0, 0, 0)); // Set to the start of today
+    const todayEnd = new Date(today.setHours(23, 59, 59, 999)); // Set to the end of today
+
+    const todayEvent = specialEventsSettings.find((event) => {
+      const eventStart = new Date(event.start); // Convert the event start string to a Date object
+      return eventStart >= todayStart && eventStart <= todayEnd; // Check if the event falls within today
+    });
+
     if (todayEvent) {
       setSpecialEventsTriggered(todayEvent.title);
     } else {
@@ -154,13 +160,16 @@ export default function Feed() {
   return (
     <Box
       sx={{
-        backgroundImage: "linear-gradient(to top, #ccb3fc, #fdeff9)",
+        backgroundImage: `url(${bricks})`, // Assuming 'bricks' is imported
+        backgroundSize: "cover", // Makes image cover the entire container
+        backgroundPosition: "center", // Centers the image
         minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         padding: 2,
         position: "relative",
+        paddingRight:"0",
       }}
     >
       {specialEventsTriggered && (
@@ -188,6 +197,7 @@ export default function Feed() {
           position: "absolute",
           top: 2,
           right: 1,
+          zIndex:"4",
         }}
       >
         <MoreVertIcon />

@@ -1,13 +1,18 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@font-face {
+  font-family: 'ShmulikCLM';
+  src: url('../fonts/ShmulikCLM.ttf') format('truetype');
 }
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+* {
+  font-family: 'ShmulikCLM';
+}
+body {
+  font-family: 'ShmulikCLM';
+  margin: 0;
+  padding: 0;
+}
+.sx-react-calendar-wrapper {
+  width: 1200px;
+  max-width: 100vw;
+  height: 800px;
+  max-height: 90vh;
 }

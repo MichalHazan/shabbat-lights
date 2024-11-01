@@ -14,7 +14,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid #ffccff; /* Border color */
   background-color: #f8f8f8; /* Background color */
 }
 

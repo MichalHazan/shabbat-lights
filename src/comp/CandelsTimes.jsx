@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./CandelsTimes.css";
 import { calculateShabbatTimes, getCityName } from "../utils/shabbatUtils";
+import {
+  toJewishDate,
+  formatJewishDateInHebrew,
+} from "jewish-date";
 
 export default function CandelsTimes() {
   const [shabbatTimes, setShabbatTimes] = useState({
@@ -11,6 +15,9 @@ export default function CandelsTimes() {
   });
   const [error, setError] = useState(null);
   const [shabbatInfo, setShabbatInfo] = useState(null);
+  const date = new Date();
+  const jewishDate = toJewishDate(date);
+  const jewishDateInHebrewStr = formatJewishDateInHebrew(jewishDate)
 
   useEffect(() => {
     // Get user's current location
@@ -68,8 +75,10 @@ export default function CandelsTimes() {
     }
 
     try {
-      const cityName = localStorage.getItem("cityName")? localStorage.getItem("cityName") : await getCityName(latitude, longitude);
-      localStorage.setItem("cityName", cityName)
+      const cityName = localStorage.getItem("cityName")
+        ? localStorage.getItem("cityName")
+        : await getCityName(latitude, longitude);
+      localStorage.setItem("cityName", cityName);
       const shabbatData = await calculateShabbatTimes(
         latitude,
         longitude,
@@ -139,22 +148,24 @@ export default function CandelsTimes() {
 
   return (
     <div className="shabbat-container">
-      <div className="shabbat-times">
-        {error && <p className="error-message">{error}</p>}
-        <p
-          className="candle-lighting"
-          dir="rtl"
-        >{`הדלקת נרות: ${shabbatTimes.candleLighting}`}</p>
-        <p
-          className="havdalah"
-          dir="rtl"
-        >{`הבדלה: ${shabbatTimes.havdalah}`}</p>
-      </div>
-      <div className="shabbat-prayer">
-        <p dir="rtl">
-          “בָּרוּךְ אַתָּה יְיָ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם, אֲשֶׁר קִדְּשָׁנוּ
-          בְּמִצְוֹתָיו וְצִוָּנוּ לְהַדְלִיק נֵר שֶׁל שַׁבָּת קֹדֶשׁ “
-        </p>
+      <div className="orange-wave">
+        <div className="wave-content">
+          <div className="shabbat-times">
+          <p>{shabbatTimes.candleLightingDate} <span lang="he">{jewishDateInHebrewStr}</span></p>
+
+            {error && <p className="error-message">{error}</p>}
+            <p className="candle-lighting">
+              {`כניסת שבת: ${shabbatTimes.candleLighting}`}
+            </p>
+            <p className="havdalah">{`יציאת שבת: ${shabbatTimes.havdalah}`}</p>
+          </div>
+          <div className="shabbat-prayer">
+            <p>
+            בָּרוּךְ אַתָּה יי אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם, אֲשֶׁר קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהַדְלִיק נֵר שֶׁל
+              שַׁבָּת
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ import {
   createViewWeek,
 } from "@schedule-x/calendar";
 import { createEventsServicePlugin } from "@schedule-x/events-service";
-import { createDragAndDropPlugin } from "@schedule-x/drag-and-drop"; // Import the drag-and-drop plugin
+import { createDragAndDropPlugin } from "@schedule-x/drag-and-drop";
 import "@schedule-x/theme-default/dist/index.css";
 
 const UserEventsComponent = ({ open, onClose }) => {
@@ -24,14 +24,25 @@ const UserEventsComponent = ({ open, onClose }) => {
   useEffect(() => {
     const storedEvents =
       JSON.parse(localStorage.getItem("SpecialEvents")) || [];
-    setEvents(storedEvents);
+    
+    // Convert events to the required format
+    const formattedEvents = storedEvents.map(event => ({
+      id: String(event.id), // Ensure this is a string
+      title: event.title,
+      start: new Date(event.start).toISOString(), // ISO string
+      end: new Date(event.end).toISOString(), // ISO string
+      description: event.description,
+    }));
+
+    console.log("Formatted Events:", formattedEvents); // Debugging
+
+    setEvents(formattedEvents);
   }, []);
 
   const plugins = [
     createEventsServicePlugin(),
     createDragAndDropPlugin({
       onDrop: (updatedEvents) => {
-        // Save updated events to state and local storage after drag-and-drop
         setEvents(updatedEvents);
         localStorage.setItem("SpecialEvents", JSON.stringify(updatedEvents));
       },
@@ -45,7 +56,7 @@ const UserEventsComponent = ({ open, onClose }) => {
       createViewMonthGrid(),
       createViewMonthAgenda(),
     ],
-    events, // Pass events directly
+    events,
     plugins,
   });
 
