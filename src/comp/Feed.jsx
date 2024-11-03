@@ -85,7 +85,6 @@ export default function Feed() {
    // Check for today's events
    const checkTodayEvents = () => {
     const todayEvent = specialEventsSettings.find(event => isToday(event.start));
-    
     if (todayEvent) {
       setSpecialEventTitle(todayEvent.title);
       

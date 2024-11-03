@@ -16,11 +16,17 @@ export default function CandelsTimes() {
   const jewishDate = toJewishDate(date);
   const jewishDateInHebrewStr = formatJewishDateInHebrew(jewishDate);
   const todayf = new Date();
-  const formattedDate = todayf.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit'
+  const formattedDate = todayf.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
   });
+
+  const isShabbatPeriod = () => {
+    const day = new Date().getDay();
+    return day === 5 || day === 6; // 5 is Friday, 6 is Saturday
+  };
+
   useEffect(() => {
     // Get user's current location
     if (navigator.geolocation) {
@@ -155,20 +161,26 @@ export default function CandelsTimes() {
           <div className="shabbat-times">
             <p>
               {" "}
-              <span lang="he">{jewishDateInHebrewStr}</span> ,{" "}
-              {formattedDate}
+              <span lang="he">{jewishDateInHebrewStr}</span> , {formattedDate}
             </p>
 
             {error && <p className="error-message">{error}</p>}
             <p className="candle-lighting">
-              {`כניסת שבת: ${shabbatTimes.candleLighting}`}
+              {`כניסת שבת${!isShabbatPeriod() ? " הבאה" : ""}: ${
+                shabbatTimes.candleLighting
+              }`}
             </p>
-            <p className="havdalah">{`יציאת שבת: ${shabbatTimes.havdalah}`}</p>
+            <p className="havdalah">
+              {`יציאת שבת${!isShabbatPeriod() ? " הבאה" : ""}: ${
+                shabbatTimes.havdalah
+              }`}
+            </p>
           </div>
           <div className="shabbat-prayer">
             <p>
-              " בָּרוּךְ אַתָּה יי אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם, אֲשֶׁר
-              קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהַדְלִיק נֵר שֶׁל שַׁבָּת "{" "}
+              {isShabbatPeriod()
+                ? "ברוּךְ אַתָּה יי אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם, אֲשֶׁר קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהַדְלִיק נֵר שֶׁל שַׁבָּת"
+                : "שבוע טוב ומבורך"}
             </p>
           </div>
         </div>
