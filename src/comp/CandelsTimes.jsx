@@ -15,7 +15,12 @@ export default function CandelsTimes() {
   const date = new Date();
   const jewishDate = toJewishDate(date);
   const jewishDateInHebrewStr = formatJewishDateInHebrew(jewishDate);
-
+  const todayf = new Date();
+  const formattedDate = todayf.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit'
+  });
   useEffect(() => {
     // Get user's current location
     if (navigator.geolocation) {
@@ -151,7 +156,7 @@ export default function CandelsTimes() {
             <p>
               {" "}
               <span lang="he">{jewishDateInHebrewStr}</span> ,{" "}
-              {shabbatTimes.candleLightingDate}
+              {formattedDate}
             </p>
 
             {error && <p className="error-message">{error}</p>}
