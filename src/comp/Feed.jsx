@@ -6,6 +6,11 @@ import {
   Menu,
   MenuItem,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
@@ -14,26 +19,112 @@ import CandelsTimes from "./CandelsTimes";
 import Parasha from "./Parasha";
 import AlertComp from "./AlertComp";
 import SpecialEvents from "./SpecialEvents";
-import UserEventsComponent from "./UserEventsComponent";
 import bricks from "../images/bricks.jpeg";
+
+const sounds = [
+  { name: "sound1", value: "sound1.mp3" },
+  { name: "sound2", value: "sound2.mp3" },
+  { name: "sound3", value: "sound3.mp3" },
+  { name: "sound4", value: "sound4.mp3" },
+  { name: "sound5", value: "sound5.mp3" },
+  { name: "sound6", value: "sound6.mp3" },
+  { name: "sound7", value: "sound7.mp3" },
+];
 
 export default function Feed() {
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenu = Boolean(anchorEl);
-  const [alertOpen, setAlertOpen] = useState(false); // State for alert dialog
+  const [alertOpen, setAlertOpen] = useState(false);
   const [showImageComp, setShowImageComp] = useState(true);
   const [alertSettings, setAlertSettings] = useState({
     time: null,
     sound: null,
-  }); // State to hold alert settings
+  });
   const [alertTriggered, setAlertTriggered] = useState(false);
-  const soundRef = useRef(null); // Reference to hold the audio object
-  const [specialEventsOpen, setSpecialEventsOpen] = useState(false); // State for SpecialEvents dialog
-  const [specialEventsSettings, setSpecialEventsSettings] = useState([]); // State to hold SpecialEvents settings
+  const soundRef = useRef(null);
+  const [specialEventsOpen, setSpecialEventsOpen] = useState(false);
+  const [specialEventsSettings, setSpecialEventsSettings] = useState([]);
   const [specialEventsTriggered, setSpecialEventsTriggered] = useState(false);
+  const [specialEventTitle, setSpecialEventTitle] = useState("");
+  const checkEventIntervalRef = useRef(null);
+  const [playedEvents, setPlayedEvents] = useState(new Set()); // Track played events
 
-  const [userEventsOpen, setUserEventsOpen] = useState(false); // State for UserEvents dialog
-  const [userEventsSettings, setUserEventsSettings] = useState([]); // State to hold UserEvents settings
+  // Helper function to check if a date is today
+  const isToday = (date) => {
+    const today = new Date();
+    const compareDate = new Date(date);
+    return (
+      compareDate.getDate() === today.getDate() &&
+      compareDate.getMonth() === today.getMonth() &&
+      compareDate.getFullYear() === today.getFullYear()
+    );
+  };
+
+  // Helper function to play sound
+  const playSound = async (soundFile) => {
+    try {
+      if (soundRef.current) {
+        soundRef.current.pause();
+        soundRef.current = null;
+      }
+      
+      const sound = new Audio(`/sounds/${soundFile}`);
+      sound.addEventListener('canplaythrough', () => {
+        soundRef.current = sound;
+        sound.play().catch(error => console.error("Error playing sound:", error));
+      });
+      
+      sound.addEventListener('error', (e) => {
+        console.error("Error loading sound:", e);
+      });
+    } catch (error) {
+      console.error("Error setting up sound:", error);
+    }
+  };
+
+   // Check for today's events
+   const checkTodayEvents = () => {
+    const todayEvent = specialEventsSettings.find(event => isToday(event.start));
+    
+    if (todayEvent) {
+      setSpecialEventTitle(todayEvent.title);
+      
+      // Only play sound if this event hasn't been played yet
+      if (!playedEvents.has(todayEvent.id) && todayEvent.sound) {
+        setSpecialEventsTriggered(true);
+        playSound(todayEvent.sound);
+        // Add this event to the played events set
+        setPlayedEvents(prev => new Set([...prev, todayEvent.id]));
+      }
+    } else {
+      // Reset everything except the title when there's no event today
+      setSpecialEventsTriggered(false);
+      setSpecialEventTitle("");
+      setPlayedEvents(new Set()); // Reset played events for the next day
+      if (soundRef.current) {
+        soundRef.current.pause();
+        soundRef.current = null;
+      }
+    }
+  };
+
+  // Effect to handle special events
+  useEffect(() => {
+    checkTodayEvents();
+    
+    // Check every minute for new events
+    checkEventIntervalRef.current = setInterval(checkTodayEvents, 60000);
+
+    return () => {
+      if (checkEventIntervalRef.current) {
+        clearInterval(checkEventIntervalRef.current);
+      }
+      if (soundRef.current) {
+        soundRef.current.pause();
+        soundRef.current = null;
+      }
+    };
+  }, [specialEventsSettings]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -43,70 +134,42 @@ export default function Feed() {
     setAnchorEl(null);
   };
 
-  // User Events
-  const handleAddUserEvents = () => {
-    setUserEventsOpen(true); // Open the UserEvents dialog
-    setAnchorEl(null);
-  };
-
-  const handleCloseUserEvents = () => {
-    setUserEventsOpen(false); // Close the UserEvents dialog
-  };
-
-  const handleSaveUserEvents = (updatedEvents) => {
-    setUserEventsSettings(updatedEvents); // Update the userEventsSettings with the new events
-    setUserEventsOpen(false); // Close the UserEvents dialog after saving
-  };
-
-  // Alert
   const handleAddAlert = () => {
-    setAlertOpen(true); // Open the alert dialog
+    setAlertOpen(true);
     setAnchorEl(null);
   };
 
   const handleCloseAlert = () => {
-    setAlertOpen(false); // Close the alert dialog
+    setAlertOpen(false);
   };
 
   const handleSaveAlert = (selectedTime, selectedSound) => {
-    setAlertSettings({ time: selectedTime, sound: selectedSound }); // Save alert settings
-    setAlertOpen(false); // Close the AlertComp dialog after saving
+    setAlertSettings({ time: selectedTime, sound: selectedSound });
+    setAlertOpen(false);
   };
 
-  // Special Events
   const handleAddSpecialEvents = () => {
-    setSpecialEventsOpen(true); // Open the SpecialEvents dialog
+    setSpecialEventsOpen(true);
     setAnchorEl(null);
   };
 
   const handleCloseSpecialEvents = () => {
-    setSpecialEventsOpen(false); // Close the SpecialEvents dialog
+    setSpecialEventsOpen(false);
   };
 
   const handleSaveSpecialEvents = (updatedEvents) => {
-    setSpecialEventsSettings(updatedEvents); // Update the specialEventsSettings with the new events
-    setSpecialEventsOpen(false); // Close the SpecialEvents dialog after saving
+    setSpecialEventsSettings(updatedEvents);
+    setSpecialEventsOpen(false);
   };
 
-  // Effect to check if there's an event today
-  useEffect(() => {
-    const today = new Date();
-    const todayStart = new Date(today.setHours(0, 0, 0, 0)); // Set to the start of today
-    const todayEnd = new Date(today.setHours(23, 59, 59, 999)); // Set to the end of today
-
-    const todayEvent = specialEventsSettings.find((event) => {
-      const eventStart = new Date(event.start); // Convert the event start string to a Date object
-      return eventStart >= todayStart && eventStart <= todayEnd; // Check if the event falls within today
-    });
-
-    if (todayEvent) {
-      setSpecialEventsTriggered(todayEvent.title);
-    } else {
-      setSpecialEventsTriggered(false); // Clear the title if no event is today
+  const handleStopEventSound = () => {
+    if (soundRef.current) {
+      soundRef.current.pause();
+      soundRef.current = null;
     }
-  }, [specialEventsSettings]);
+    setSpecialEventsTriggered(false);
+  };
 
-  // Toggle Component
   const toggleComponent = () => {
     setShowImageComp((prev) => !prev);
   };
@@ -115,6 +178,8 @@ export default function Feed() {
   useEffect(() => {
     if (alertSettings.time !== null && alertSettings.sound) {
       const shabbatTimes = JSON.parse(localStorage.getItem("shabbatTimes"));
+      if (!shabbatTimes?.candleLightingDate) return;
+
       const candleLightingTime = new Date(shabbatTimes.candleLightingDate);
       const alertTime = new Date(
         candleLightingTime.getTime() - alertSettings.time * 60000
@@ -123,11 +188,8 @@ export default function Feed() {
 
       if (timeUntilAlert > 0) {
         const soundTimeout = setTimeout(() => {
-          soundRef.current = new Audio(`/sounds/${alertSettings.sound}`);
-          soundRef.current
-            .play()
-            .catch((error) => console.error("Error playing sound:", error));
-        }, timeUntilAlert - 10000); // 30 seconds before alert
+          playSound(alertSettings.sound);
+        }, timeUntilAlert - 10000);
 
         const alertTimeout = setTimeout(() => {
           setAlertTriggered(true);
@@ -141,38 +203,29 @@ export default function Feed() {
     }
   }, [alertSettings]);
 
-  // Effect to stop sound after clicking "OK"
   useEffect(() => {
     if (!alertTriggered) return;
 
-    const handleStopSound = () => {
-      if (soundRef.current) {
-        soundRef.current.pause();
-        soundRef.current = null;
-      }
-      setAlertTriggered(false);
-    };
-
     alert("תכף הזמן להדליק נרות שבת");
-    handleStopSound();
+    handleStopEventSound();
   }, [alertTriggered]);
 
   return (
     <Box
       sx={{
-        backgroundImage: `url(${bricks})`, // Assuming 'bricks' is imported
-        backgroundSize: "cover", // Makes image cover the entire container
-        backgroundPosition: "center", // Centers the image
+        backgroundImage: `url(${bricks})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         padding: 2,
         position: "relative",
-        paddingRight:"0",
+        paddingRight: "0",
       }}
     >
-      {specialEventsTriggered && (
+      {specialEventTitle && (
         <Typography
           variant="h6"
           sx={{
@@ -185,9 +238,22 @@ export default function Feed() {
             fontWeight: "bold",
           }}
         >
-          {specialEventsTriggered}
+          {specialEventTitle}
         </Typography>
       )}
+      
+      {specialEventsTriggered && (
+        <Dialog open={specialEventsTriggered} onClose={handleStopEventSound}>
+          <DialogTitle>{specialEventTitle}</DialogTitle>
+          <DialogContent />
+          <DialogActions>
+            <Button onClick={handleStopEventSound} color="primary">
+              עצור
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
       <IconButton
         aria-label="more"
         aria-controls={openMenu ? "menu" : undefined}
@@ -197,7 +263,7 @@ export default function Feed() {
           position: "absolute",
           top: 2,
           right: 1,
-          zIndex:"4",
+          zIndex: "4",
         }}
       >
         <MoreVertIcon />
@@ -211,26 +277,18 @@ export default function Feed() {
       >
         <MenuItem onClick={handleAddAlert}>הוסף התראה</MenuItem>
         <MenuItem onClick={handleAddSpecialEvents}>הוסף יום מיוחד</MenuItem>
-        <MenuItem onClick={handleAddUserEvents}>הצגת האירועים</MenuItem>
       </Menu>
 
-      {/* Render the AlertComp dialog */}
       <AlertComp
         open={alertOpen}
         onClose={handleCloseAlert}
         handleSaveAlert={handleSaveAlert}
       />
-      {/* Render the SpecialEvents dialog */}
+      
       <SpecialEvents
         open={specialEventsOpen}
         onClose={handleCloseSpecialEvents}
         handleSaveSpecialEvents={handleSaveSpecialEvents}
-      />
-      {/* Render the UserEvents dialog */}
-      <UserEventsComponent
-        open={userEventsOpen}
-        onClose={handleCloseUserEvents}
-        handleSaveUserEvents={handleSaveUserEvents}
       />
 
       <Grid container spacing={2}>

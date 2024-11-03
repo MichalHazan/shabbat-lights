@@ -12,14 +12,13 @@ import {
 } from "@mui/material";
 
 const sounds = [
-  { name: "bubble-pop", value: "bubble-pop-ding-betacut.mp3" },
-  { name: "cartoon-game", value: "cartoon-game-upgrade-ni-sound.mp3" },
-  {
-    name: "level-complete",
-    value: "level-complete-mobile-game-app-locran-1-00-06.mp3",
-  },
-  { name: "cuckoo", value: "cuckoo-9-94258.mp3" },
-  { name: "שלום עליכם", value: "shalomAleichem.mp3" },
+  { name: "sound1", value: "sound1.mp3" },
+  { name: "sound2", value: "sound2.mp3" },
+  { name: "sound3", value: "sound3.mp3" },
+  { name: "sound4", value: "sound4.mp3" },
+  { name: "sound5", value: "sound5.mp3" },
+  { name: "sound6", value: "sound6.mp3" },
+  { name: "sound7", value: "sound7.mp3" },
 ];
 
 export default function AlertComp({ open, onClose, handleSaveAlert }) {

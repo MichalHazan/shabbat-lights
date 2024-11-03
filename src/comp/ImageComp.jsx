@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./ImageComp.css";
 import candleImage from "../images/candle.png";
+import logoyorshabbat from "../images/logoyorshabbat.jpeg"
 
 export default function ImageComp() {
   const [image, setImage] = useState(candleImage);

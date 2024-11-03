@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./CandelsTimes.css";
 import { calculateShabbatTimes, getCityName } from "../utils/shabbatUtils";
-import {
-  toJewishDate,
-  formatJewishDateInHebrew,
-} from "jewish-date";
+import { toJewishDate, formatJewishDateInHebrew } from "jewish-date";
 
 export default function CandelsTimes() {
   const [shabbatTimes, setShabbatTimes] = useState({
@@ -17,7 +14,7 @@ export default function CandelsTimes() {
   const [shabbatInfo, setShabbatInfo] = useState(null);
   const date = new Date();
   const jewishDate = toJewishDate(date);
-  const jewishDateInHebrewStr = formatJewishDateInHebrew(jewishDate)
+  const jewishDateInHebrewStr = formatJewishDateInHebrew(jewishDate);
 
   useEffect(() => {
     // Get user's current location
@@ -151,7 +148,11 @@ export default function CandelsTimes() {
       <div className="orange-wave">
         <div className="wave-content">
           <div className="shabbat-times">
-          <p>{shabbatTimes.candleLightingDate} <span lang="he">{jewishDateInHebrewStr}</span></p>
+            <p>
+              {" "}
+              <span lang="he">{jewishDateInHebrewStr}</span> ,{" "}
+              {shabbatTimes.candleLightingDate}
+            </p>
 
             {error && <p className="error-message">{error}</p>}
             <p className="candle-lighting">
@@ -161,8 +162,8 @@ export default function CandelsTimes() {
           </div>
           <div className="shabbat-prayer">
             <p>
-            בָּרוּךְ אַתָּה יי אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם, אֲשֶׁר קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהַדְלִיק נֵר שֶׁל
-              שַׁבָּת
+              " בָּרוּךְ אַתָּה יי אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם, אֲשֶׁר
+              קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהַדְלִיק נֵר שֶׁל שַׁבָּת "{" "}
             </p>
           </div>
         </div>
