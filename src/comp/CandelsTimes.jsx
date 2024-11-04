@@ -23,8 +23,30 @@ export default function CandelsTimes() {
   });
 
   const isShabbatPeriod = () => {
+    const now = new Date();
+    const fridayBeforeShabbat = new Date(shabbatTimes.candleLighting);
+    const saturdayAfterShabbat = new Date(shabbatTimes.havdalah);
+    return now >= fridayBeforeShabbat && now <= saturdayAfterShabbat;
+  };
+
+  const getMessageByDayAndTime = () => {
     const day = new Date().getDay();
-    return day === 5 || day === 6; // 5 is Friday, 6 is Saturday
+    const now = new Date();
+    const candleLightingTime = new Date(shabbatTimes.candleLighting);
+    const havdalahTime = new Date(shabbatTimes.havdalah);
+
+    if (day === 5 && now >= candleLightingTime) return "שבת שלום וסוף שבוע מבורך, מלא בחוויות נעימות ומרגיעות";
+    if (day === 6 && now >= havdalahTime) return "שיהיה שבוע טוב מלא באור, שמחה והצלחה";
+
+    switch (day) {
+      case 0: return "שיהיה יום נפלא, מלא בהזדמנויות חדשות והגשמה עצמית";
+      case 1: return "שהיום הזה יביא איתו רק בשורות טובות ורגעים מתוקים";
+      case 2: return "שיהיה יום קסום, מלא באנרגיות טובות והישגים משמחים";
+      case 3: return "שיהיה יום פורה ומוצלח, עם המון סיבות לחייך";
+      case 4: return "שהיום הזה יהיה מלא בהפתעות נעימות ורגעים בלתי נשכחים";
+      case 5: return now < candleLightingTime ? "שבת שלום וסוף שבוע מבורך, מלא בחוויות נעימות ומרגיעות" : "";
+      default: return "";
+    }
   };
 
   useEffect(() => {
@@ -166,22 +188,18 @@ export default function CandelsTimes() {
 
             {error && <p className="error-message">{error}</p>}
             <p className="candle-lighting">
-              {`כניסת שבת${!isShabbatPeriod() ? " הבאה" : ""}: ${
+              {`כניסת שבת${!isShabbatPeriod() ? " הקרובה" : ""}: ${
                 shabbatTimes.candleLighting
               }`}
             </p>
             <p className="havdalah">
-              {`יציאת שבת${!isShabbatPeriod() ? " הבאה" : ""}: ${
+              {`יציאת שבת${!isShabbatPeriod() ? " הקרובה" : ""}: ${
                 shabbatTimes.havdalah
               }`}
             </p>
           </div>
           <div className="shabbat-prayer">
-            <p>
-              {isShabbatPeriod()
-                ? "ברוּךְ אַתָּה יי אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם, אֲשֶׁר קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהַדְלִיק נֵר שֶׁל שַׁבָּת"
-                : "שבוע טוב ומבורך"}
-            </p>
+            <p>{isShabbatPeriod() ? "ברוּךְ אַתָּה יי אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם, אֲשֶׁר קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהַדְלִיק נֵר שֶׁל שַׁבָּת" : getMessageByDayAndTime()}</p>
           </div>
         </div>
       </div>
